@@ -54,17 +54,23 @@ class PollReader():
         and each value in a CSV is seperated by a comma.
         """
 
-        # iterate through each row of the data
-        for i in self.raw_data:
 
-            # split up the row by column
-            separated = i.strip().split(',')
+        for i, line in enumerate(self.raw_data):
 
-            # map each part of the row to the correct column
+            if i == 0:
+                continue  
+
+            separated = line.strip().split(',')
+
+
+            sample_value = separated[2]
+            sample_num = int(sample_value[:-2])
+            sample_type = sample_value[-2:].strip()
+
             self.data_dict['month'].append(separated[0])
             self.data_dict['date'].append(int(separated[1]))
-            self.data_dict['sample'].append(int(separated[2][:-2]))
-            self.data_dict['sample type'].append(separated[2][-2:].strip())
+            self.data_dict['sample'].append(sample_num)
+            self.data_dict['sample type'].append(sample_type)
             self.data_dict['Harris result'].append(float(separated[3]))
             self.data_dict['Trump result'].append(float(separated[4]))
 
@@ -119,11 +125,12 @@ class PollReader():
             tuple: A tuple containing the net change for Harris and Trump, in that order.
                    Positive values indicate an increase, negative values indicate a decrease.
         """
-        harris_early = sum(self.data_dict['Harris result'][:30]) / 30
-        trump_early = sum(self.data_dict['Trump result'][:30]) / 30
+        harris_early = sum(self.data_dict['Harris result'][-30:]) / 30
+        trump_early = sum(self.data_dict['Trump result'][-30:]) / 30
 
-        harris_late = sum(self.data_dict['Harris result'][-30:]) / 30
-        trump_late = sum(self.data_dict['Trump result'][-30:]) / 30
+
+        harris_late = sum(self.data_dict['Harris result'][:30]) / 30
+        trump_late = sum(self.data_dict['Trump result'][:30]) / 30
 
         return (harris_late - harris_early, trump_late - trump_early)
 
